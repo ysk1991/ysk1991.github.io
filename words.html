@@ -1,239 +1,384 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="screen-orientation" content="landscape">
-  <meta name="x5-orientation" content="landscape">
-  <title>你画我猜 - 词语展示</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
-    html, body {
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background-color: #1e88e5;
-      font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
-      touch-action: manipulation;
-    }
-    
-    #container {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      width: 100%;
-      height: 100%;
-      cursor: pointer;
-      user-select: none;
-      -webkit-user-select: none;
-    }
-    
-    #word {
-      font-size: 5rem;
-      font-weight: bold;
-      color: white;
-      text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-      padding: 20px;
-      border-radius: 15px;
-      background-color: rgba(0, 0, 0, 0.2);
-      transition: transform 0.3s ease, background-color 0.3s ease;
-      max-width: 90%;
-      text-align: center;
-    }
-    
-    #word.animate {
-      transform: scale(1.1);
-      background-color: rgba(0, 0, 0, 0.3);
-    }
-    
-    #hint {
-      position: fixed;
-      bottom: 20px;
-      color: rgba(255, 255, 255, 0.7);
-      font-size: 1rem;
-      text-align: center;
-      width: 100%;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="screen-orientation" content="landscape" />
+    <meta name="x5-orientation" content="landscape" />
+    <title>你画我猜 - 词语展示</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-    /* 横屏模式优化 */
-    @media (orientation: landscape) {
-      #word {
-        font-size: 4.5rem;
-        padding: 15px 30px;
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background-color: #1e88e5;
+        font-family: 'Microsoft YaHei', '微软雅黑', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+        touch-action: manipulation;
       }
-    }
-    
-    /* 小屏幕设备优化 */
-    @media (max-height: 600px) {
-      #word {
-        font-size: 4rem;
-      }
-    }
 
-    @media (max-width: 480px) {
-      #word {
-        font-size: 3rem;
+      #container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+        user-select: none;
+        -webkit-user-select: none;
       }
-    }
-    
-    /* 手机横屏模式 */
-    @media (max-width: 900px) and (orientation: landscape) {
-      #word {
-        font-size: 3.5rem;
-        max-width: 80%;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div id="container">
-    <div id="word">点击开始</div>
-    <div id="hint">点击屏幕随机显示词语</div>
-  </div>
 
-  <script>
-    // 词汇数组
-    const words = ['长颈鹿','西瓜','雨伞','冰淇淋','自行车','拖鞋','热气球','蜗牛','台灯','风车','螃蟹','信封','汉堡包','火箭','蝴蝶结','雪人','照相机','香蕉','秋千','火山爆发','画龙点睛','指鹿为马','鸡鸣狗盗','大象','电脑','老铁','二次元','游泳比赛','冬瓜','钓鱼','走马观花','苹果','手电筒','蹑手蹑脚','大头鱼','烘干机','击剑','洛阳纸贵','天涯海角','冬瓜','巧舌如簧','挤眉弄眼','精忠报国','宁缺毋滥','纸杯','丸子','菜刀','亡羊补牢','钻戒','刘翔','逍遥法外','名副其实','万箭穿心','晴天霹雳','泥牛下海','蜂蜜','作茧自缚','鲜花','和尚','轮椅','乒乓球','雨鞋','开膛破肚','鸭子','对牛弹琴','井底之蛙','画蛇添足','盲人摸象','亡羊补牢','嫦娥奔月','孙悟空','泰坦尼克号','蜘蛛侠','哈利波特','蹦极','打地鼠','垃圾分类','直播带货','快递小哥','手机没电','抢红包','露营帐篷','无人机送货','消毒','纽扣','小偷','大米','杯子','刘备','闯红灯','棒棒糖','企鹅','流口水','愁眉苦脸','跨','面条','武术','五湖四海','抱头鼠窜','恶作剧','替罪羊','猴年马月','油','地球仪','牛奶','衣柜','太阳','尼姑','手舞足蹈','跳绳','指手划脚','芋头','蜘蛛','海马','拳击','瑜伽','指手划脚','鹦鹉','吊兰','不及格','扬州炒饭','絮絮叨叨','耳目一新','如鱼得水','酸粉','迟到','恍然大悟','KTV','落井下石','手无寸铁','张三丰','西红柿','泣不成声','公鸡打鸣','斗地主','手舞足蹈','锦上添花','白领','扇子','秃顶','走马观花','自行车','窈窕淑女','洗衣粉'];
-    
-    const container = document.getElementById('container');
-    const wordElement = document.getElementById('word');
-    const hintElement = document.getElementById('hint');
-    let isFirstClick = true;
-    
-    // 随机获取词语
-    function getRandomWord() {
-      const randomIndex = Math.floor(Math.random() * words.length);
-      return words[randomIndex];
-    }
-    
-    // 更新显示的词语
-    function updateWord() {
-      const randomWord = getRandomWord();
-      wordElement.textContent = randomWord;
-      
-      // 添加动画效果
-      wordElement.classList.add('animate');
-      setTimeout(() => {
-        wordElement.classList.remove('animate');
-      }, 300);
-      
-      // 随机更改背景颜色
-      const colors = [
-        '#1e88e5', '#43a047', '#e53935', '#8e24aa', '#fb8c00', 
-        '#00897b', '#3949ab', '#d81b60', '#6d4c41', '#546e7a'
+      #word {
+        font-size: 5rem;
+        font-weight: bold;
+        color: white;
+        text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        padding: 20px;
+        border-radius: 15px;
+        background-color: rgba(0, 0, 0, 0.2);
+        transition:
+          transform 0.3s ease,
+          background-color 0.3s ease;
+        max-width: 90%;
+        text-align: center;
+      }
+
+      #word.animate {
+        transform: scale(1.1);
+        background-color: rgba(0, 0, 0, 0.3);
+      }
+
+      #hint {
+        position: fixed;
+        bottom: 20px;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 1rem;
+        text-align: center;
+        width: 100%;
+      }
+
+      /* 横屏模式优化 */
+      @media (orientation: landscape) {
+        #word {
+          font-size: 4.5rem;
+          padding: 15px 30px;
+        }
+      }
+
+      /* 小屏幕设备优化 */
+      @media (max-height: 600px) {
+        #word {
+          font-size: 4rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        #word {
+          font-size: 3rem;
+        }
+      }
+
+      /* 手机横屏模式 */
+      @media (max-width: 900px) and (orientation: landscape) {
+        #word {
+          font-size: 5rem;
+          max-width: 80%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container">
+      <div id="word">点击开始</div>
+      <div id="hint">点击屏幕随机显示词语</div>
+    </div>
+
+    <script>
+      // 词汇数组
+      const words = [
+        '长颈鹿',
+        '西瓜',
+        '雨伞',
+        '冰淇淋',
+        '自行车',
+        '拖鞋',
+        '热气球',
+        '蜗牛',
+        '台灯',
+        '风车',
+        '螃蟹',
+        '信封',
+        '汉堡包',
+        '火箭',
+        '蝴蝶结',
+        '雪人',
+        '照相机',
+        '香蕉',
+        '秋千',
+        '火山爆发',
+        '画龙点睛',
+        '指鹿为马',
+        '鸡鸣狗盗',
+        '大象',
+        '电脑',
+        '老铁',
+        '二次元',
+        '游泳比赛',
+        '冬瓜',
+        '钓鱼',
+        '走马观花',
+        '苹果',
+        '手电筒',
+        '蹑手蹑脚',
+        '大头鱼',
+        '烘干机',
+        '击剑',
+        '洛阳纸贵',
+        '天涯海角',
+        '冬瓜',
+        '巧舌如簧',
+        '挤眉弄眼',
+        '精忠报国',
+        '宁缺毋滥',
+        '纸杯',
+        '丸子',
+        '菜刀',
+        '亡羊补牢',
+        '钻戒',
+        '刘翔',
+        '逍遥法外',
+        '名副其实',
+        '万箭穿心',
+        '晴天霹雳',
+        '泥牛下海',
+        '蜂蜜',
+        '作茧自缚',
+        '鲜花',
+        '和尚',
+        '轮椅',
+        '乒乓球',
+        '雨鞋',
+        '开膛破肚',
+        '鸭子',
+        '对牛弹琴',
+        '井底之蛙',
+        '画蛇添足',
+        '盲人摸象',
+        '亡羊补牢',
+        '嫦娥奔月',
+        '孙悟空',
+        '泰坦尼克号',
+        '蜘蛛侠',
+        '哈利波特',
+        '蹦极',
+        '打地鼠',
+        '垃圾分类',
+        '直播带货',
+        '快递小哥',
+        '手机没电',
+        '抢红包',
+        '露营帐篷',
+        '无人机送货',
+        '消毒',
+        '纽扣',
+        '小偷',
+        '大米',
+        '杯子',
+        '刘备',
+        '闯红灯',
+        '棒棒糖',
+        '企鹅',
+        '流口水',
+        '愁眉苦脸',
+        '跨',
+        '面条',
+        '武术',
+        '五湖四海',
+        '抱头鼠窜',
+        '恶作剧',
+        '替罪羊',
+        '猴年马月',
+        '油',
+        '地球仪',
+        '牛奶',
+        '衣柜',
+        '太阳',
+        '尼姑',
+        '手舞足蹈',
+        '跳绳',
+        '指手划脚',
+        '芋头',
+        '蜘蛛',
+        '海马',
+        '拳击',
+        '瑜伽',
+        '指手划脚',
+        '鹦鹉',
+        '吊兰',
+        '不及格',
+        '扬州炒饭',
+        '絮絮叨叨',
+        '耳目一新',
+        '如鱼得水',
+        '酸粉',
+        '迟到',
+        '恍然大悟',
+        'KTV',
+        '落井下石',
+        '手无寸铁',
+        '张三丰',
+        '西红柿',
+        '泣不成声',
+        '公鸡打鸣',
+        '斗地主',
+        '手舞足蹈',
+        '锦上添花',
+        '白领',
+        '扇子',
+        '秃顶',
+        '走马观花',
+        '自行车',
+        '窈窕淑女',
+        '洗衣粉',
       ];
-      const randomColor = colors[Math.floor(Math.random() * colors.length)];
-      document.body.style.backgroundColor = randomColor;
-    }
-    
-    // 点击事件处理
-    container.addEventListener('click', () => {
-      if (isFirstClick) {
-        isFirstClick = false;
-        hintElement.textContent = '点击屏幕切换词语';
-      }
-      updateWord();
-    });
-    
-    // 触摸事件处理（移动设备）
-    container.addEventListener('touchend', (e) => {
-      e.preventDefault(); // 防止双击缩放
-      if (isFirstClick) {
-        isFirstClick = false;
-        hintElement.textContent = '点击屏幕切换词语';
-      }
-      updateWord();
-    });
-    
-    // 添加触摸开始事件，防止点击延迟
-    container.addEventListener('touchstart', (e) => {
-      e.preventDefault(); // 防止默认行为
-    });
 
-    // 支持键盘空格键切换
-    document.addEventListener('keydown', (e) => {
-      if (e.code === 'Space') {
-        e.preventDefault(); // 防止页面滚动
+      const container = document.getElementById('container');
+      const wordElement = document.getElementById('word');
+      const hintElement = document.getElementById('hint');
+      let isFirstClick = true;
+
+      // 随机获取词语
+      function getRandomWord() {
+        const randomIndex = Math.floor(Math.random() * words.length);
+        return words[randomIndex];
+      }
+
+      // 更新显示的词语
+      function updateWord() {
+        const randomWord = getRandomWord();
+        wordElement.textContent = randomWord;
+
+        // 添加动画效果
+        wordElement.classList.add('animate');
+        setTimeout(() => {
+          wordElement.classList.remove('animate');
+        }, 300);
+
+        // 随机更改背景颜色
+        const colors = ['#1e88e5', '#43a047', '#e53935', '#8e24aa', '#fb8c00', '#00897b', '#3949ab', '#d81b60', '#6d4c41', '#546e7a'];
+        const randomColor = colors[Math.floor(Math.random() * colors.length)];
+        document.body.style.backgroundColor = randomColor;
+      }
+
+      // 点击事件处理
+      container.addEventListener('click', () => {
         if (isFirstClick) {
           isFirstClick = false;
           hintElement.textContent = '点击屏幕切换词语';
         }
         updateWord();
-      }
-    });
+      });
 
-    // 自动调整字体大小以适应屏幕
-    function adjustFontSize() {
-      const viewportWidth = window.innerWidth;
-      const viewportHeight = window.innerHeight;
-      const minDimension = Math.min(viewportWidth, viewportHeight);
-      const isLandscape = viewportWidth > viewportHeight;
-      
-      if (isLandscape) {
-        // 横屏模式下的字体大小调整
-        if (viewportHeight < 400) {
-          wordElement.style.fontSize = '2.5rem';
-        } else if (viewportHeight < 600) {
-          wordElement.style.fontSize = '3.2rem';
-        } else {
-          wordElement.style.fontSize = '4rem';
-        }
-      } else {
-        // 竖屏模式下的字体大小调整
-        if (minDimension < 400) {
-          wordElement.style.fontSize = '2.5rem';
-        } else if (minDimension < 600) {
-          wordElement.style.fontSize = '3.5rem';
-        } else if (minDimension < 800) {
-          wordElement.style.fontSize = '4.5rem';
-        } else {
-          wordElement.style.fontSize = '5rem';
-        }
-      }
-    }
-
-    // 初始调整和窗口大小变化时调整
-    window.addEventListener('resize', adjustFontSize);
-    window.addEventListener('orientationchange', () => {
-      // 方向改变后稍微延迟调整，确保新尺寸已应用
-      setTimeout(adjustFontSize, 300);
-    });
-    adjustFontSize();
-    
-    // 强制横屏提示（如果需要）
-    function checkOrientation() {
-      if (window.innerHeight > window.innerWidth && window.innerWidth < 900) {
-        hintElement.textContent = '请将手机横屏以获得最佳体验';
-      } else {
-        if (!isFirstClick) {
+      // 触摸事件处理（移动设备）
+      container.addEventListener('touchend', (e) => {
+        e.preventDefault(); // 防止双击缩放
+        if (isFirstClick) {
+          isFirstClick = false;
           hintElement.textContent = '点击屏幕切换词语';
         }
+        updateWord();
+      });
+
+      // 添加触摸开始事件，防止点击延迟
+      container.addEventListener('touchstart', (e) => {
+        e.preventDefault(); // 防止默认行为
+      });
+
+      // 支持键盘空格键切换
+      document.addEventListener('keydown', (e) => {
+        if (e.code === 'Space') {
+          e.preventDefault(); // 防止页面滚动
+          if (isFirstClick) {
+            isFirstClick = false;
+            hintElement.textContent = '点击屏幕切换词语';
+          }
+          updateWord();
+        }
+      });
+
+      // 自动调整字体大小以适应屏幕
+      function adjustFontSize() {
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        const minDimension = Math.min(viewportWidth, viewportHeight);
+        const isLandscape = viewportWidth > viewportHeight;
+
+        if (isLandscape) {
+          // 横屏模式下的字体大小调整
+          if (viewportHeight < 400) {
+            wordElement.style.fontSize = '5rem';
+          } else if (viewportHeight < 600) {
+            wordElement.style.fontSize = '3.2rem';
+          } else {
+            wordElement.style.fontSize = '4rem';
+          }
+        } else {
+          // 竖屏模式下的字体大小调整
+          if (minDimension < 400) {
+            wordElement.style.fontSize = '5rem';
+          } else if (minDimension < 600) {
+            wordElement.style.fontSize = '3.5rem';
+          } else if (minDimension < 800) {
+            wordElement.style.fontSize = '4.5rem';
+          } else {
+            wordElement.style.fontSize = '5rem';
+          }
+        }
       }
-    }
-    
-    // 检查初始方向和方向变化
-    checkOrientation();
-    window.addEventListener('resize', checkOrientation);
-    window.addEventListener('orientationchange', () => {
-      setTimeout(checkOrientation, 300);
-    });
-    
-    // 禁用页面缩放
-    document.addEventListener('gesturestart', function(e) {
-      e.preventDefault();
-    });
-    document.addEventListener('gesturechange', function(e) {
-      e.preventDefault();
-    });
-    document.addEventListener('gestureend', function(e) {
-      e.preventDefault();
-    });
-  </script>
-</body>
+
+      // 初始调整和窗口大小变化时调整
+      window.addEventListener('resize', adjustFontSize);
+      window.addEventListener('orientationchange', () => {
+        // 方向改变后稍微延迟调整，确保新尺寸已应用
+        setTimeout(adjustFontSize, 300);
+      });
+      adjustFontSize();
+
+      // 强制横屏提示（如果需要）
+      function checkOrientation() {
+        if (window.innerHeight > window.innerWidth && window.innerWidth < 900) {
+          hintElement.textContent = '请将手机横屏以获得最佳体验';
+        } else {
+          if (!isFirstClick) {
+            hintElement.textContent = '点击屏幕切换词语';
+          }
+        }
+      }
+
+      // 检查初始方向和方向变化
+      checkOrientation();
+      window.addEventListener('resize', checkOrientation);
+      window.addEventListener('orientationchange', () => {
+        setTimeout(checkOrientation, 300);
+      });
+
+      // 禁用页面缩放
+      document.addEventListener('gesturestart', function (e) {
+        e.preventDefault();
+      });
+      document.addEventListener('gesturechange', function (e) {
+        e.preventDefault();
+      });
+      document.addEventListener('gestureend', function (e) {
+        e.preventDefault();
+      });
+    </script>
+  </body>
 </html>
